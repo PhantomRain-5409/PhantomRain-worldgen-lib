@@ -1,0 +1,6 @@
+{
+  "wglib.message.dim_reset_warning": "Warning! Dimension resetting in %s seconds!",
+  "wglib.message.dim_reset_cancelled": "Reset cancelled: Players detected.",
+  "wglib.message.dim_force_reset": "Dimension %s has been forcefully reset!",
+  "wglib.message.kicked_out_for_reset": "You have been kicked out of the dimension due to reset."
+}

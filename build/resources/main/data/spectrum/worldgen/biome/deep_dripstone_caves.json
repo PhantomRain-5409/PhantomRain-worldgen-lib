@@ -1,0 +1,95 @@
+{
+  "temperature": 0.2,
+  "downfall": 1.0,
+  "creature_spawn_probability": 0,
+  "effects": {
+    "sky_color": 0,
+    "fog_color": 591623,
+    "water_color": 13880241,
+    "water_fog_color": 7629410,
+    "grass_color": 7241038,
+    "foliage_color": 3819567,
+    "grass_color_modifier": "none",
+   "mood_sound": {
+      "sound": "minecraft:ambient.basalt_deltas.mood",
+      "tick_delay": 4000,
+      "block_search_extent": 8,
+      "offset": 2
+    },
+    "music": {
+      "sound": "minecraft:ambient.basalt_deltas.mood",
+      "min_delay": 12000,
+      "max_delay": 24000,
+      "replace_current_music": false
+    }
+  },
+  "spawners": {
+    "ambient": [
+      {
+        "type": "minecraft:bat",
+        "weight": 10,
+        "minCount": 8,
+        "maxCount": 8
+      }
+    ],
+    "axolotls": [
+      {
+        "type": "minecraft:axolotl",
+        "weight": 10,
+        "minCount": 1,
+        "maxCount": 2
+      }
+    ],
+    "creature": [
+      {
+        "type": "minecraft:sniffer",
+        "weight": 10,
+        "minCount": 3,
+        "maxCount": 4
+      }
+    ],
+    "misc": [],
+    "monster": [],
+    "underground_water_creature": [
+      {
+        "type": "minecraft:glow_squid",
+        "weight": 10,
+        "minCount": 1,
+        "maxCount": 2
+      }
+    ],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "spawn_costs": {},
+  "carvers": {
+    "air": [
+      "spectrum:dd_cave"
+    ]
+  },
+  "features": [
+    [],
+    [
+    ],
+    [
+    ],
+    [],
+    [
+    ],
+    [],
+    [
+    
+    ],
+    [
+
+    ],
+    [
+   
+    ],
+    [
+
+    ],
+    []
+  ],
+  "has_precipitation": false
+}

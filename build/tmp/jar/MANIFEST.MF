@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: ptrlib_wg
+Specification-Vendor: PhantomRain
+Specification-Version: 1
+Implementation-Title: ptrlib_wg
+Implementation-Version: 1.0.0
+Implementation-Vendor: PhantomRain
+Implementation-Timestamp: 2026-07-08T00:36:30+0800
+
