@@ -1,26 +1,27 @@
-# Ptrlib WG 模组文档
+# Ptrlib WG Documentation
 
-本模组为 Minecraft 世界生成提供了一套增强型扩展工具，旨在简化数据包与模组开发中的结构生成与维度管理流程。
+PhantomRain's worldgen library for Minecraft (Forge 1.20.1). It adds tools for structure generation and runtime dimension management in datapacks and mods.
 
-> **前置要求**：使用本模组功能前，请确保您具备一定的 Minecraft 数据包基础知识。
+> **Prerequisite**: Basic knowledge of Minecraft datapacks is recommended.  
+> 中文文档: [README_zh.md](README_zh.md)
 
-## 目录
+## Table of Contents
 
-1. [固定位置结构生成](#1-固定位置结构生成)
-2. [单 NBT 简单结构注册](#2-单-nbt-简单结构注册)
-3. [维度预设](#3-维度预设)
-4. [实时维度重置](#4-实时维度重置)
-5. [维度副本](#5-维度副本)
+1. [Fixed-Position Structure Placement](#1-fixed-position-structure-placement)
+2. [Simple Single-NBT Structure](#2-simple-single-nbt-structure)
+3. [Dimension Presets](#3-dimension-presets)
+4. [Live Dimension Reset](#4-live-dimension-reset)
+5. [Dimension Copies](#5-dimension-copies)
 
 ---
 
-## 1. 固定位置结构生成
+## 1. Fixed-Position Structure Placement
 
-本模组注册了新的结构放置类型 `ptrlib_wg:fixed_position`，允许在世界的指定固定坐标生成结构。配置文件位于 `worldgen/structure_set` 目录下。
+Registers placement type `ptrlib_wg:fixed_position` so structures can generate at fixed chunk coordinates. Place configs under `worldgen/structure_set`.
 
-> **注意**：结构的生成高度（Y 轴）由对应的 `structure` 文件决定，不在此放置器中配置。
+> **Note**: Vertical placement (Y) is controlled by the `structure` definition, not this placement type.
 
-### 示例 JSON
+### Example JSON
 
 ```json
 {
@@ -38,23 +39,23 @@
 }
 ```
 
-**参数说明：**
+**Fields:**
 
-- `x` 和 `z`：定义结构生成的区块坐标。两者均为可选字段，缺省时默认值为 `0`。上述示例将使远古城市固定在坐标 `(0, 0)` 处生成。
+- `x` / `z` (optional, default `0`): chunk coordinates where the structure may place. The example pins an ancient city to chunk `(0, 0)`.
 
 ---
 
-## 2. 单 NBT 简单结构注册
+## 2. Simple Single-NBT Structure
 
-针对原版拼图结构配置繁琐且基于高度图生成难以微调 Y 轴位置的问题，本模组提供了 `ptrlib_wg:basic` 结构类型。配置文件位于 `worldgen/structure` 目录下。
+`ptrlib_wg:basic` avoids heavy jigsaw setup and makes Y placement easier. Configs live under `worldgen/structure`.
 
-### 字段说明
+### Fields
 
-- **必填字段**：`biomes`、`nbt_path`、`spawn_overrides`、`step`
-- **选填字段**：`terrain_adaptation`、`project_start_to_heightmap`、`fixed_height`、`y_offset`
-- 除拼图模板池相关配置外，其余字段与原版拼图结构基本一致。
+- **Required**: `biomes`, `nbt_path`, `spawn_overrides`, `step`
+- **Optional**: `terrain_adaptation`, `project_start_to_heightmap`, `fixed_height`, `y_offset`
+- Other fields mostly match vanilla structure-style settings (except jigsaw pool wiring).
 
-### 示例 1：固定高度生成（`fixed_height`）
+### Example 1: Fixed height (`fixed_height`)
 
 ```json
 {
@@ -67,8 +68,8 @@
 }
 ```
 
-- 当指定 `fixed_height` 时，结构将固定在设定的 Y 坐标生成，此时高度图配置将被忽略。
-- `fixed_height` 也支持原版整数提供器，以实现 Y 坐标的随机生成：
+- With `fixed_height`, the structure spawns at that Y; heightmap projection is ignored.
+- `fixed_height` also accepts vanilla int providers for random Y:
 
 ```json
 "fixed_height": {
@@ -78,9 +79,9 @@
 }
 ```
 
-### 示例 2：高度图与 Y 轴偏移（`y_offset`）
+### Example 2: Heightmap + offset (`y_offset`)
 
-当未配置 `fixed_height` 时，模组将扫描地表表面高度并生成结构。
+Without `fixed_height`, the mod samples surface height, then applies offset.
 
 ```json
 {
@@ -93,16 +94,16 @@
 }
 ```
 
-- `project_start_to_heightmap`：可选，默认为 `WORLD_SURFACE_WG`。
-- `y_offset`：可选，默认为 `0`。使结构上下偏移，适用于部分埋地结构（如紫水晶、地窖等）。上述示例将使结构下降一格，可用作地基处理。
+- `project_start_to_heightmap`: optional, default `WORLD_SURFACE_WG`.
+- `y_offset`: optional, default `0`. Useful for slightly buried builds (e.g. foundation sink of 1 block).
 
 ---
 
-## 3. 维度预设
+## 3. Dimension Presets
 
-本模组提供了维度生成器类型 `preset`，可用于快速构建纯虚空维度模板。
+Chunk generator type `ptrlib_wg:preset` builds empty/void-style dimensions quickly.
 
-### 示例 JSON
+### Example JSON
 
 ```json
 {
@@ -114,73 +115,66 @@
 }
 ```
 
-*说明：上述配置将生成带有原版虚空起始平台的纯虚空维度。若不需要该平台，可自行注册自定义虚空群系，或通过数据包覆盖原版相关结构。*
+*This produces a void-like dimension with the vanilla void start platform. To remove the platform, use a custom void biome or datapack overrides.*
 
-### 预设建筑导入流程
+### Importing preset builds
 
-1. 进入生成的虚空维度，在其中放置预设建筑（如浮空岛等）。
-2. 退出并保存世界，定位至 `saves\<存档名>\dimensions` 目录，该文件夹内存放了维度的区块数据。
-3. 将您需要固化的内容（通常为地形区块文件，例如 `ptrlib_wg/void/region` 文件夹。可在游戏内按 `F3` 查看区块坐标与名称）复制到 `config/ptrlib_wg/preset_dims` 目录内。
-4. 请确保最终目录与 `config/ptrlib_wg/preset_dims` 内部结构保持一致（`namespace/path/...`）。只需包含您要复制的区块文件即可。
-5. 配置完成后，在后续创建新存档时，模组将自动提取并应用这些预设数据。
+1. Enter the void dimension and place the buildings you want to keep.
+2. Save and quit. Open `saves/<world>/dimensions`.
+3. Copy the region data you need (e.g. `ptrlib_wg/void/region`; use `F3` in-game for chunk coords) into `config/ptrlib_wg/preset_dims`.
+4. Keep the same layout under `preset_dims` (`namespace/path/...`). Only the chunk files you need are required.
+5. On **new** worlds, the mod copies those presets into the save automatically (once per world via lock file).
 
 ---
 
-## 4. 实时维度重置
+## 4. Live Dimension Reset
 
-本功能允许在服务器运行期间动态重置特定维度，支持定时自动重置、指令触发及 KubeJS 联动。
+Reset registered dimensions while the server is running: scheduled auto-reset, commands, or KubeJS.
 
-### 配置文件说明
+### Config
 
-请在 `config/ptrlib_wg/ptrlib_wg-common.toml` 中进行维度重置参数的配置：
+Edit `config/ptrlib_wg/ptrlib_wg-common.toml`:
 
 ```toml
-#格式: dimId;enable_auto;auto_empty;interval_min;warn_sec;force
-#除了 dimId 外所有参数均可选。留空将使用默认值。
-#- dimId: 维度ID (例如: twilightforest:twilight_forest)。支持原版维度，如 minecraft:the_nether 和 minecraft:the_end。
-#- enable_auto: 开启定时自动重置 (默认: false)。若为 false，则只能通过指令手动重置。
-#- auto_empty: 维度内无玩家时自动重置 (默认: false)。
-#- interval_min: 重置间隔，单位为分钟 (默认: 60)。
-#- warn_sec: 重置前的警告时间，单位为秒 (默认: 10)。
-#- force: 重置前强制将玩家踢出该维度 (默认: true)。
-# 最终列表示意：
+# Format: dimId;enable_auto;auto_empty;interval_min;warn_sec;force
+# All fields except dimId are optional (defaults apply when blank).
+# - dimId: dimension id (e.g. twilightforest:twilight_forest). Vanilla dims supported.
+# - enable_auto: scheduled auto reset (default: false). If false, command/API only.
+# - auto_empty: reset when no players are in the dimension (default: false).
+# - interval_min: interval in minutes (default: 60).
+# - warn_sec: warning seconds before reset (default: 10).
+# - force: kick players before reset (default: true). If false, skip when players present.
 reset_dimensions = "ptrlib_wg:void;true;false;1;10;true,spectrum:deeper_down;true;false;1;10;true"
 ```
 
-**参数补充说明：**
+**Notes:**
 
-- 当 `enable_auto` 设为 `false` 时，只能通过指令或 KubeJS 等方法手动重置。
-- 当 `auto_empty` 设为 `true` 时，将在维度内无玩家时自动执行重置。
-- 当 `force` 设为 `true` 时，重置时会强制踢出该维度内的所有玩家；若设为 `false`，则当维度内有玩家时取消该次重置。
-- **自动重置不会更换种子**（始终保持当前种子）。
+- Auto reset **never** changes seed (`enable=false`).
+- Manual reset may optionally reseed (see command below).
 
-### 指令调用
+### Command
 
-使用指令可立即重置已在配置文件中注册的维度（需 OP 权限 2）：
+Requires permission level 2. Dimension must be listed in config.
 
 ```
 /dim_reset <dim_id> [enable] [seed]
 ```
 
-| 参数 | 说明 |
-|------|------|
-| `dim_id` | 必填。目标维度 ID（含命名空间） |
-| `enable` | 可选，默认 `false`。为 `true` 时在重置前更换种子 |
-| `seed` | 可选。仅当 `enable=true` 时生效；省略则使用随机种子 |
+| Arg | Description |
+|-----|-------------|
+| `dim_id` | Target dimension id (with namespace) |
+| `enable` | Optional, default `false`. If `true`, change seed before reset |
+| `seed` | Optional. Used only when `enable=true`; omit for a random seed |
 
-**示例：**
+**Examples:**
 
-- `/dim_reset minecraft:the_nether` — 按当前种子清空并重置下界
-- `/dim_reset ptrlib_wg:void true` — 使用随机新种子重置
-- `/dim_reset ptrlib_wg:void true 12345` — 使用指定种子 `12345` 重置
+- `/dim_reset minecraft:the_nether` — reset with current seed
+- `/dim_reset ptrlib_wg:void true` — reset with a random new seed
+- `/dim_reset ptrlib_wg:void true 12345` — reset with seed `12345`
 
-*说明：换种后，新生成的区块将按新种子生成；该覆盖种子会写入存档（副本维度写入 `ptrlib_wg_dim_copies.json`，其它维度写入 `ptrlib_wg_dim_seeds.json`）。*
+*Reseeded worlds use the new seed for newly generated chunks. Overrides are saved in the world folder (`ptrlib_wg_dim_copies.json` for copies, `ptrlib_wg_dim_seeds.json` for others).*
 
-### KubeJS 联动示例（待测试）
-
-可通过 KubeJS 调用底层 Java 类触发重置（需使用 `loadClass`）。
-
-*示例：右键红石块重置指定维度。*
+### KubeJS example (experimental)
 
 ```javascript
 // kubejs/server_scripts/wglib_interact.js
@@ -192,22 +186,22 @@ BlockEvents.rightClicked(event => {
         let server = event.server;
         let dimId = Utils.id('ptrlib_wg:void');
 
-        // 不换种重置
+        // Reset without reseed
         DimResetHelper.resetDimension(server, dimId, true, false);
 
-        // 换种重置（随机）
+        // Reseed random
         // DimResetHelper.resetDimension(server, dimId, true, false, true, null);
 
-        // 换种重置（指定种子）
+        // Reseed fixed
         // DimResetHelper.resetDimension(server, dimId, true, false, true, 12345);
 
-        // 或走管理器接口（含全服提示）
+        // Manager API (broadcast message)
         // DimResetManager.forceReset(server, dimId, true, null);
     }
 });
 ```
 
-**方法签名：**
+**Signatures:**
 
 ```text
 DimensionResetHelper.resetDimension(server, dimId, kickPlayers, isAutoEmpty)
@@ -218,92 +212,86 @@ DimResetManager.forceReset(server, dimId, enableSeed, seed)
 
 ---
 
-## 5. 维度副本
+## 5. Dimension Copies
 
-本功能允许在服务器运行期间，将已有维度复制为一份独立的新维度，并可选择是否使用新种子。仅本模组创建的副本可通过删除指令移除。
+Create independent runtime copies of existing dimensions, optionally with a new seed. Only copies created by this mod can be deleted via command.
 
-### 指令
+### Commands
 
-需 OP 权限 2。
+Permission level 2.
 
-#### 创建副本
+#### Create
 
 ```
 /dim_copy <dim_id> <id> [enable] [seed]
 ```
 
-| 参数 | 说明 |
-|------|------|
-| `dim_id` | 必填。源维度 ID（将被复制的维度） |
-| `id` | 必填。新维度 ID；若已存在则创建失败 |
-| `enable` | 可选，默认 `false`。为 `true` 时使用自定义/随机种子；为 `false` 时沿用源维度种子 |
-| `seed` | 可选。仅当 `enable=true` 时生效；省略则使用随机种子 |
+| Arg | Description |
+|-----|-------------|
+| `dim_id` | Source dimension to copy |
+| `id` | New dimension id (fails if already exists) |
+| `enable` | Optional, default `false`. `true` = custom/random seed; `false` = keep source seed |
+| `seed` | Optional. Only when `enable=true`; omit for random |
 
-**示例：**
+**Examples:**
 
-- `/dim_copy minecraft:overworld ptrlib_wg:copy1` — 复制主世界，种子与源相同
-- `/dim_copy minecraft:overworld ptrlib_wg:copy2 false` — 同上
-- `/dim_copy minecraft:the_nether ptrlib_wg:nether_a true` — 复制下界，使用随机种子
-- `/dim_copy minecraft:the_nether ptrlib_wg:nether_b true 20260101` — 复制下界，使用指定种子
+- `/dim_copy minecraft:overworld ptrlib_wg:copy1` — copy overworld, same seed
+- `/dim_copy minecraft:overworld ptrlib_wg:copy2 false` — same
+- `/dim_copy minecraft:the_nether ptrlib_wg:nether_a true` — random seed
+- `/dim_copy minecraft:the_nether ptrlib_wg:nether_b true 20260101` — fixed seed
 
-#### 删除副本
+#### Delete
 
 ```
 /dim_delete <dim_id>
 ```
 
-- `dim_id`：要删除的副本维度 ID。
-- **仅副本维度可被删除**；原版或数据包原生维度不会被删除。
-- 删除时会将仍在该维度内的玩家送回重生点，并清理对应区块数据。
+- Only **copy** dimensions can be deleted (not vanilla/datapack native dims).
+- Players inside are respawned; region data for the copy is cleaned.
 
-### 数据与行为说明
+### Data & behavior
 
-- 副本元数据保存在世界存档根目录的 `ptrlib_wg_dim_copies.json`。
-- 服务器重启后会自动重新加载已创建的副本维度。
-- 副本维度可与「维度重置」配合使用：先在配置中注册副本 ID，即可定时或手动重置；手动重置时同样可指定新种子。
+- Metadata: world root `ptrlib_wg_dim_copies.json`
+- Copies reload after server restart
+- Register a copy id in dim-reset config to auto/manual reset it; manual reset can reseed
 
-
-### KubeJS 联动示例（待测试）
-
-可通过 KubeJS 调用 `DimCopyManager` 创建/删除副本。
-
-*示例：右键绿宝石块创建副本，右键红石块删除副本。*
+### KubeJS example (experimental)
 
 ```javascript
 // kubejs/server_scripts/wglib_dim_copy.js
 const DimCopyManager = Java.loadClass('com.ptr5409.wglib.dimcopy.DimCopyManager');
 
-// 创建副本：复制 overworld 为 ptrlib_wg:arena，使用随机种子
+// Create: overworld -> ptrlib_wg:arena with random seed
 BlockEvents.rightClicked('minecraft:emerald_block', event => {
     let server = event.server;
     let source = Utils.id('minecraft:overworld');
     let copyId = Utils.id('ptrlib_wg:arena');
 
-    // enableSeed=true, seed=null -> 随机种子
+    // enableSeed=true, seed=null -> random seed
     let ok = DimCopyManager.createCopy(server, source, copyId, true, null);
     if (ok) {
-        event.player.tell('已创建维度副本: ' + copyId);
+        event.player.tell('Created dimension copy: ' + copyId);
     } else {
-        event.player.tell('创建失败（可能已存在或源维度无效）');
+        event.player.tell('Create failed (exists or invalid source)');
     }
 });
 
-// 指定种子创建
+// Fixed seed
 // DimCopyManager.createCopy(server, source, copyId, true, 20260101);
 
-// 不换种复制（沿用源维度种子）
+// Same seed as source
 // DimCopyManager.createCopy(server, source, copyId, false, null);
 
-// 删除副本（仅本模组创建的副本可删）
+// Delete copy (mod-created only)
 BlockEvents.rightClicked('minecraft:redstone_block', event => {
     let server = event.server;
     let copyId = Utils.id('ptrlib_wg:arena');
     let ok = DimCopyManager.deleteCopy(server, copyId);
-    event.player.tell(ok ? ('已删除: ' + copyId) : '删除失败（不是副本或不存在）');
+    event.player.tell(ok ? ('Deleted: ' + copyId) : 'Delete failed (not a copy / missing)');
 });
 ```
 
-**方法签名：**
+**Signatures:**
 
 ```text
 DimCopyManager.createCopy(server, sourceId, copyId, enableSeed, seed)
@@ -312,9 +300,7 @@ DimCopyManager.isCopy(dimId)
 DimCopyManager.setSeed(server, copyId, seed)
 ```
 
-### 传送示例
-
-创建成功后，可使用原版指令进入副本：
+### Teleport example
 
 ```
 /execute in ptrlib_wg:copy1 run tp @s ~ ~ ~
