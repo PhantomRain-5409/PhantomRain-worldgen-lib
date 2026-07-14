@@ -50,3 +50,6 @@ compile_err2.txt
 # Secrets / local env (if any)
 .env
 *.local
+
+# Local agent notes (do not publish)
+AGENTS.md
