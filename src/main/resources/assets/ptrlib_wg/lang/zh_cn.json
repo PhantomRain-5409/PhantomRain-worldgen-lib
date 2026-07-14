@@ -2,5 +2,12 @@
   "wglib.message.dim_reset_warning": "警告！维度将在 %s 秒后重置！",
   "wglib.message.dim_reset_cancelled": "检测到维度内存在玩家，重置取消。",
   "wglib.message.dim_force_reset": "维度 %s 已被强制重置！",
-  "wglib.message.kicked_out_for_reset": "由于维度开始重置，你已被强制送出该维度。"
+  "wglib.message.kicked_out_for_reset": "由于维度开始重置，你已被强制送出该维度。",
+  "wglib.commands.dim_copy.success": "成功复制维度 %s 至 %s",
+  "wglib.commands.dim_copy.failed": "复制维度失败。该维度可能已经存在，或者源维度无效。",
+  "wglib.commands.dim_delete.success": "成功删除维度：%s",
+  "wglib.commands.dim_delete.failed": "删除维度失败。副本维度可能不存在，或者它并非某个维度的副本。",
+  "wglib.commands.dim_reset.not_registered": "该维度未在配置中注册！",
+  "wglib.commands.dim_reset.success": "成功重置维度：%s",
+  "wglib.commands.dim_reset.success_new_seed": "成功使用新种子重置维度：%s"
 }

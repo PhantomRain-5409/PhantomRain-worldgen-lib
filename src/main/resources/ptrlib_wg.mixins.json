@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ptr5409.wglib.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "wglib.refmap.json",
+  "mixins": [
+    "LevelResourceAccessor",
+    "MinecraftServerMixin",
+    "ServerLevelMixin"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:overworld",
-  "generator": {
-    "type": "ptrlib_wg:preset",
-    "default_biome": "minecraft:the_void"
-  }
-}

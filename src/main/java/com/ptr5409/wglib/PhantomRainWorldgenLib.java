@@ -1,10 +1,10 @@
 package com.ptr5409.wglib;
 
 import com.ptr5409.wglib.config.DimResetConfig;
-import com.ptr5409.wglib.worldgen.WGChunkGenerators;
-import com.ptr5409.wglib.worldgen.WGPlacementTypes;
-import com.ptr5409.wglib.worldgen.WGStructurePieceTypes;
-import com.ptr5409.wglib.worldgen.WGStructureTypes;
+import com.ptr5409.wglib.worldgen.generator.WGChunkGenerators;
+import com.ptr5409.wglib.worldgen.structure.WGPlacementTypes;
+import com.ptr5409.wglib.worldgen.structure.WGStructurePieceTypes;
+import com.ptr5409.wglib.worldgen.structure.WGStructureTypes;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;

@@ -1,0 +1,52 @@
+# Gradle
+.gradle/
+build/
+out/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# Minecraft Forge run / game data
+run/
+runs/
+logs/
+crash-reports/
+saves/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Java / compile
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+
+# Local / accidental files
+git
+*.log
+compile_out.txt
+compile_err.txt
+compile_out2.txt
+compile_err2.txt
+
+# Mixin export / refmap intermediate (generated under build anyway)
+.mixin.out/
+
+# Secrets / local env (if any)
+.env
+*.local

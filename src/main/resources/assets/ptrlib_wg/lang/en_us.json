@@ -2,5 +2,12 @@
   "wglib.message.dim_reset_warning": "Warning! Dimension resetting in %s seconds!",
   "wglib.message.dim_reset_cancelled": "Reset cancelled: Players detected.",
   "wglib.message.dim_force_reset": "Dimension %s has been forcefully reset!",
-  "wglib.message.kicked_out_for_reset": "You have been kicked out of the dimension due to reset."
+  "wglib.message.kicked_out_for_reset": "You have been kicked out of the dimension due to reset.",
+  "wglib.commands.dim_copy.success": "Successfully copied dimension %s to %s",
+  "wglib.commands.dim_copy.failed": "Failed to copy dimension. It may already exist, or source is invalid.",
+  "wglib.commands.dim_delete.success": "Successfully deleted dimension: %s",
+  "wglib.commands.dim_delete.failed": "Failed to delete dimension. It may not exist, or it is not a copied dimension.",
+  "wglib.commands.dim_reset.not_registered": "Dimension not registered in config!",
+  "wglib.commands.dim_reset.success": "Successfully reset dimension: %s",
+  "wglib.commands.dim_reset.success_new_seed": "Successfully reset dimension with a new seed: %s"
 }

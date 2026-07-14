@@ -1,6 +1,0 @@
-{
-  "wglib.message.dim_reset_warning": "警告！维度将在 %s 秒后重置！",
-  "wglib.message.dim_reset_cancelled": "检测到维度内存在玩家，重置取消。",
-  "wglib.message.dim_force_reset": "维度 %s 已被强制重置！",
-  "wglib.message.kicked_out_for_reset": "由于维度开始重置，你已被强制送出该维度。"
-}
