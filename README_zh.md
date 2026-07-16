@@ -13,6 +13,7 @@
 3. [维度预设](#3-维度预设)
 4. [实时维度重置](#4-实时维度重置)
 5. [维度副本](#5-维度副本)
+6. [群系替换](#6-群系替换)
 
 ---
 
@@ -321,3 +322,203 @@ DimCopyManager.setSeed(server, copyId, seed)
 ```
 /execute in ptrlib_wg:copy1 run tp @s ~ ~ ~
 ```
+
+---
+
+## 6. 群系替换
+
+群系替换规则通过数据包加载，可作用于使用原版 `MultiNoiseBiomeSource` 的维度。安装 TerraBlender 时，也支持其注入的群系参数。
+
+规则文件放置于：
+
+```text
+data/<命名空间>/ptrlib_wg/biome_replace/<文件名>.json
+```
+
+每个文件的根元素必须是 JSON 列表，列表中的每个元素对应一条独立规则。规则会在世界加载时解析；修改数据包后需重启世界或服务器。已经生成的区块会保留其已存储的群系，因此规则变更主要影响新生成区域。
+
+### 通用字段
+
+| 字段 | 说明 |
+|------|------|
+| `type` | `direct_replace`、`weighted_replace`、`weighted_infuse` 或 `sub_biome` |
+| `dimension` | 可选维度 ID；省略时作用于所有兼容的 MultiNoise 维度 |
+| `target` | 目标群系 ID 或 `#群系标签`；`weighted_infuse` 必须填写单个群系 ID |
+
+### 直接替换
+
+`direct_replace` 会替换所有匹配的目标群系。省略 `replacement` 时，该群系将被阻止生成。
+
+```json
+[
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:dark_forest",
+    "replacement": "minecraft:cherry_grove"
+  },
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:swamp"
+  },
+  {
+    "type": "direct_replace",
+    "target": "#minecraft:is_beach",
+    "replacement": "minecraft:snowy_beach"
+  }
+]
+```
+
+### 权重替换
+
+`weighted_replace` 按正整数权重，将目标群系对应的气候参数区域分配给多个新群系。
+
+```json
+{
+  "type": "weighted_replace",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:forest",
+  "replacements": [
+    { "biome": "minecraft:plains", "weight": 9 },
+    { "biome": "minecraft:mushroom_fields", "weight": 1 }
+  ]
+}
+```
+
+该类型按气候参数空间确定性切分，并非逐区块随机选择。因此群系边界会跟随气候过渡和被选中的切分轴。
+
+### 权重注入
+
+`weighted_infuse` 会保留一部分目标群系，同时按权重插入多个子群系。
+
+```json
+{
+  "type": "weighted_infuse",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:birch_forest",
+  "parent_weight": 7,
+  "subs": [
+    { "biome": "minecraft:old_growth_birch_forest", "weight": 2 },
+    { "biome": "minecraft:flower_forest", "weight": 1 }
+  ]
+}
+```
+
+- `parent_weight`：目标群系保留的权重，默认 `1`，最小为 `0`。
+- `subs`：非空子群系列表，每个元素使用正整数权重。
+- `target`：只能填写群系 ID，不能使用标签。
+
+与 `weighted_replace` 相同，该类型切分气候参数空间，并不是运行时随机放置。
+
+### 条件子群系
+
+`sub_biome` 会在主群系选定后进行第二阶段判断，仅在条件匹配的位置替换为子群系。它可以表达群系边缘、内部、相邻群系、气候值及噪声斑块等规则。
+
+```json
+{
+  "type": "sub_biome",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:plains",
+  "biome": "minecraft:sunflower_plains",
+  "criterion": {
+    "type": "all_of",
+    "criteria": [
+      {
+        "type": "ratio",
+        "target": "center",
+        "max": 0.35
+      },
+      {
+        "type": "patch_noise",
+        "min": 0.0,
+        "max": 0.45,
+        "scale": 96.0,
+        "salt": 1001
+      }
+    ]
+  }
+}
+```
+
+同一目标存在多条子群系规则时，将按数据包中的顺序判断，第一条匹配规则生效。
+
+#### 条件类型
+
+| 类型 | 字段 | 行为 |
+|------|------|------|
+| `all_of` | `criteria` | 所有嵌套条件都匹配时生效 |
+| `any_of` | `criteria` | 至少一个嵌套条件匹配时生效 |
+| `not` | `criterion` | 反转一个嵌套条件的结果 |
+| `value` | `parameter`、`min`、`max` | 判断原始气候值 |
+| `deviation` | `parameter`、`min`、`max` | 判断相对主群系参数中心的有符号偏移 |
+| `ratio` | `target`、`min`、`max`，可选 `parameter` | 判断相对 `center` 或 `edge` 的距离；越接近 `0` 表示越靠近指定区域 |
+| `neighbor` | `biome`、`biomes` 或 `tag` | 判断气候匹配度第二高的相邻候选群系 |
+| `original` | `biome`、`biomes` 或 `tag` | 判断静态替换前选中的群系 |
+| `primary` | `biome`、`biomes` 或 `tag` | 判断静态替换后当前选中的主群系 |
+| `patch_noise` | `min`、`max`，可选 `scale`、`salt` | 选择随世界种子稳定生成的平滑斑块；输出范围为 `0..1` |
+
+支持的气候参数包括 `temperature`、`humidity`、`continentalness`、`erosion`、`depth`、`weirdness` 和 `peaks_valleys`。
+
+`patch_noise.scale` 表示近似斑块尺寸（方块），默认值为 `96`。修改 `salt` 可以在不更换世界种子的情况下得到另一套稳定分布。
+
+群系匹配可使用以下形式：
+
+```json
+{ "type": "neighbor", "biome": "minecraft:river" }
+```
+
+```json
+{ "type": "neighbor", "tag": "minecraft:is_ocean" }
+```
+
+```json
+{
+  "type": "neighbor",
+  "biomes": ["minecraft:river", "minecraft:frozen_river"]
+}
+```
+
+#### 内置预设
+
+常见放置方式可以省略 `criterion`，直接在规则顶层填写 `preset`：
+
+```json
+{
+  "type": "sub_biome",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:forest",
+  "biome": "minecraft:flower_forest",
+  "preset": "near_border",
+  "max": 0.2
+}
+```
+
+| 预设 | 行为 |
+|------|------|
+| `near_border` | 目标群系边界附近的狭窄区域 |
+| `near_interior` | 目标群系气候中心附近的区域 |
+| `beachside` | 与 `#minecraft:is_beach` 群系相邻的边界 |
+| `oceanside` | 与 `#minecraft:is_ocean` 群系相邻的边界 |
+| `riverside` | 与 `#minecraft:is_river` 群系相邻的边界 |
+
+### 完整数据包示例
+
+项目内提供了覆盖全部规则类型、可直接使用的测试数据包：
+
+```text
+test_datapack/biome_replace_test
+```
+
+将该文件夹复制到 `<存档>/datapacks/`，必要时启用数据包，然后重启世界或服务器。其规则文件位于：
+
+```text
+data/ptrlib_wg/ptrlib_wg/biome_replace/all_types.json
+```
+
+### 兼容性与限制
+
+- 支持原版 MultiNoise 群系源与 TerraBlender 注入的 Region。
+- 不会修改非 MultiNoise 群系源。
+- 权重类型表达的是确定性的气候空间占比，实际生成面积为近似值，并不保证精确区块数量。
+- 条件子群系在运行时进行选择；其群系会加入群系源的 possible-biomes 列表，使相关群系特征与结构能够识别它。

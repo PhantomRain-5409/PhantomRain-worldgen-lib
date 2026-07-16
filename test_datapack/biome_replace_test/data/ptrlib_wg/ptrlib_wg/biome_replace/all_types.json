@@ -1,0 +1,65 @@
+[
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:dark_forest",
+    "replacement": "minecraft:cherry_grove"
+  },
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:swamp"
+  },
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "#minecraft:is_beach",
+    "replacement": "minecraft:snowy_beach"
+  },
+  {
+    "type": "weighted_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:forest",
+    "replacements": [
+      { "biome": "minecraft:plains", "weight": 9 },
+      { "biome": "minecraft:mushroom_fields", "weight": 1 }
+    ]
+  },
+  {
+    "type": "weighted_infuse",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:birch_forest",
+    "parent_weight": 7,
+    "subs": [
+      { "biome": "minecraft:old_growth_birch_forest", "weight": 2 },
+      { "biome": "minecraft:flower_forest", "weight": 1 }
+    ]
+  },
+  {
+    "type": "sub_biome",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:plains",
+    "biome": "minecraft:sunflower_plains",
+    "criterion": {
+      "type": "all_of",
+      "criteria": [
+        { "type": "ratio", "target": "center", "parameter": "weirdness", "max": 0.35 },
+        { "type": "patch_noise", "min": 0.0, "max": 0.45, "scale": 96.0, "salt": 1001 }
+      ]
+    }
+  },
+  {
+    "type": "sub_biome",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:forest",
+    "biome": "minecraft:flower_forest",
+    "preset": "near_border",
+    "max": 0.2
+  },
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:the_nether",
+    "target": "minecraft:warped_forest",
+    "replacement": "minecraft:crimson_forest"
+  }
+]

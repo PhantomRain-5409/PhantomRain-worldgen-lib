@@ -12,6 +12,7 @@ PhantomRain's worldgen library for Minecraft (Forge 1.20.1). It adds tools for s
 3. [Dimension Presets](#3-dimension-presets)
 4. [Live Dimension Reset](#4-live-dimension-reset)
 5. [Dimension Copies](#5-dimension-copies)
+6. [Biome Replacement](#6-biome-replacement)
 
 ---
 
@@ -305,3 +306,203 @@ DimCopyManager.setSeed(server, copyId, seed)
 ```
 /execute in ptrlib_wg:copy1 run tp @s ~ ~ ~
 ```
+
+---
+
+## 6. Biome Replacement
+
+Biome replacement rules are loaded from datapacks and applied to vanilla `MultiNoiseBiomeSource` dimensions. TerraBlender-injected biome parameters are also supported when TerraBlender is installed.
+
+Place rule files under:
+
+```text
+data/<namespace>/ptrlib_wg/biome_replace/<file>.json
+```
+
+Each file must contain a JSON array. Every array element is one independent rule. Rules are resolved when the world loads; restart the world/server after editing the datapack. Existing generated chunks keep their stored biomes, so changes primarily affect newly generated terrain.
+
+### Common fields
+
+| Field | Description |
+|-------|-------------|
+| `type` | `direct_replace`, `weighted_replace`, `weighted_infuse`, or `sub_biome` |
+| `dimension` | Optional dimension ID. If omitted, the rule applies to every compatible MultiNoise dimension |
+| `target` | Target biome ID or `#biome_tag`; `weighted_infuse` requires one biome ID |
+
+### Direct replacement
+
+`direct_replace` replaces every matching target biome. Omit `replacement` to prevent that biome from being selected.
+
+```json
+[
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:dark_forest",
+    "replacement": "minecraft:cherry_grove"
+  },
+  {
+    "type": "direct_replace",
+    "dimension": "minecraft:overworld",
+    "target": "minecraft:swamp"
+  },
+  {
+    "type": "direct_replace",
+    "target": "#minecraft:is_beach",
+    "replacement": "minecraft:snowy_beach"
+  }
+]
+```
+
+### Weighted replacement
+
+`weighted_replace` divides each matching climate parameter area between the listed biomes according to positive integer weights.
+
+```json
+{
+  "type": "weighted_replace",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:forest",
+  "replacements": [
+    { "biome": "minecraft:plains", "weight": 9 },
+    { "biome": "minecraft:mushroom_fields", "weight": 1 }
+  ]
+}
+```
+
+This is deterministic climate-space splitting, not per-chunk random selection. Biome borders therefore follow climate transitions and the selected split axis.
+
+### Weighted infusion
+
+`weighted_infuse` retains part of the target biome while inserting weighted child biomes.
+
+```json
+{
+  "type": "weighted_infuse",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:birch_forest",
+  "parent_weight": 7,
+  "subs": [
+    { "biome": "minecraft:old_growth_birch_forest", "weight": 2 },
+    { "biome": "minecraft:flower_forest", "weight": 1 }
+  ]
+}
+```
+
+- `parent_weight`: weight retained by the target biome; default `1`, minimum `0`.
+- `subs`: non-empty child list using positive integer weights.
+- `target`: must be a biome ID, not a tag.
+
+Like `weighted_replace`, this mode splits climate parameter space and is not runtime random placement.
+
+### Conditional sub-biomes
+
+`sub_biome` performs a second selection after the primary biome has been chosen. It replaces only positions where its condition matches, allowing border, interior, neighboring-biome, climate, and noise-patch placement.
+
+```json
+{
+  "type": "sub_biome",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:plains",
+  "biome": "minecraft:sunflower_plains",
+  "criterion": {
+    "type": "all_of",
+    "criteria": [
+      {
+        "type": "ratio",
+        "target": "center",
+        "max": 0.35
+      },
+      {
+        "type": "patch_noise",
+        "min": 0.0,
+        "max": 0.45,
+        "scale": 96.0,
+        "salt": 1001
+      }
+    ]
+  }
+}
+```
+
+For rules with the same target, conditions are evaluated in datapack order and the first matching rule wins.
+
+#### Criterion types
+
+| Type | Fields | Behavior |
+|------|--------|----------|
+| `all_of` | `criteria` | Matches when every nested criterion matches |
+| `any_of` | `criteria` | Matches when at least one nested criterion matches |
+| `not` | `criterion` | Inverts one nested criterion |
+| `value` | `parameter`, `min`, `max` | Tests the raw climate value |
+| `deviation` | `parameter`, `min`, `max` | Tests signed deviation from the primary biome parameter center |
+| `ratio` | `target`, `min`, `max`, optional `parameter` | Tests distance from `center` or `edge`; values near `0` are closer to the requested target |
+| `neighbor` | `biome`, `biomes`, or `tag` | Tests the next-best fitting biome |
+| `original` | `biome`, `biomes`, or `tag` | Tests the biome selected before static replacement |
+| `primary` | `biome`, `biomes`, or `tag` | Tests the current primary biome after static replacement |
+| `patch_noise` | `min`, `max`, optional `scale`, `salt` | Selects smooth seed-dependent patches; output range is `0..1` |
+
+Supported climate parameters are `temperature`, `humidity`, `continentalness`, `erosion`, `depth`, `weirdness`, and `peaks_valleys`.
+
+`patch_noise.scale` is the approximate patch size in blocks and defaults to `96`. Change `salt` to produce a different stable pattern without changing the world seed.
+
+Biome matching accepts one of these forms:
+
+```json
+{ "type": "neighbor", "biome": "minecraft:river" }
+```
+
+```json
+{ "type": "neighbor", "tag": "minecraft:is_ocean" }
+```
+
+```json
+{
+  "type": "neighbor",
+  "biomes": ["minecraft:river", "minecraft:frozen_river"]
+}
+```
+
+#### Built-in presets
+
+For common placements, `criterion` can be replaced by a top-level `preset`:
+
+```json
+{
+  "type": "sub_biome",
+  "dimension": "minecraft:overworld",
+  "target": "minecraft:forest",
+  "biome": "minecraft:flower_forest",
+  "preset": "near_border",
+  "max": 0.2
+}
+```
+
+| Preset | Behavior |
+|--------|----------|
+| `near_border` | Thin area near the target biome border |
+| `near_interior` | Area near the target biome climate center |
+| `beachside` | Border adjacent to a biome in `#minecraft:is_beach` |
+| `oceanside` | Border adjacent to a biome in `#minecraft:is_ocean` |
+| `riverside` | Border adjacent to a biome in `#minecraft:is_river` |
+
+### Complete datapack example
+
+A ready-to-use datapack covering all rule types is included at:
+
+```text
+test_datapack/biome_replace_test
+```
+
+Copy that folder into `<world>/datapacks/`, enable it when necessary, and restart the world/server. Its rule file is located at:
+
+```text
+data/ptrlib_wg/ptrlib_wg/biome_replace/all_types.json
+```
+
+### Compatibility and limitations
+
+- Supports vanilla MultiNoise biome sources and TerraBlender-injected regions.
+- Does not modify non-MultiNoise biome sources.
+- Weighted modes describe deterministic climate-space proportions; exact generated area is approximate rather than a guaranteed chunk count.
+- Conditional sub-biomes are runtime selections. Their biome is added to the source's possible-biome list so biome features and structures can recognize it.
