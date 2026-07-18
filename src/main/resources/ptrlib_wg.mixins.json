@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.ptr5409.wglib.mixin",
   "compatibilityLevel": "JAVA_17",
-  "refmap": "wglib.refmap.json",
+  "refmap": "ptrlib_wg.mixins.refmap.json",
   "plugin": "com.ptr5409.wglib.mixin.WgMixinPlugin",
   "mixins": [
     "LevelResourceAccessor",
